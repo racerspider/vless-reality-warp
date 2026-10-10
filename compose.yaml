@@ -1,0 +1,87 @@
+name: ${COMPOSE_PROJECT_NAME:?Run manage.py init first}
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-xray: &xray
+  image: ${XRAY_IMAGE:?Missing versions.env}
+  platform: linux/amd64
+  restart: unless-stopped
+  user: "65532:65532"
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  command: [run, -config, /etc/xray/config.json]
+  logging: *logging
+
+services:
+  warp:
+    image: ${WARP_IMAGE:?Missing versions.env}
+    platform: linux/amd64
+    restart: unless-stopped
+    mem_limit: 1024m
+    memswap_limit: 1280m
+    cap_add: [NET_ADMIN, MKNOD, AUDIT_WRITE]
+    device_cgroup_rules: ["c 10:200 rwm"]
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: "0"
+      net.ipv4.conf.all.src_valid_mark: "1"
+    environment:
+      WARP_SLEEP: "2"
+      GOST_ARGS: "-L=socks5://:1082?secrets=/etc/gost/users.txt&dns=/etc/gost/dns.txt"
+    volumes:
+      - ./data/warp:/var/lib/cloudflare-warp
+      - ./runtime/gost-users.txt:/etc/gost/users.txt:ro
+      - ./config/gost-dns.txt:/etc/gost/dns.txt:ro
+      - ./scripts/warp-health.sh:/healthcheck/functional.sh:ro
+    networks:
+      tunnel:
+        ipv4_address: ${WARP_IPV4}
+    healthcheck:
+      test: [CMD, /bin/sh, /healthcheck/functional.sh]
+      interval: 30s
+      timeout: 35s
+      retries: 5
+      start_period: 90s
+    logging: *logging
+
+  xray:
+    <<: *xray
+    mem_limit: 256m
+    memswap_limit: 384m
+    depends_on:
+      warp:
+        condition: service_healthy
+    ports:
+      - "${PUBLIC_BIND}:${PUBLIC_PORT}:8443/tcp"
+    volumes:
+      - ./runtime/server.json:/etc/xray/config.json:ro
+    networks:
+      tunnel:
+        ipv4_address: ${XRAY_IPV4}
+
+  probe:
+    <<: *xray
+    profiles: [diagnostics]
+    mem_limit: 64m
+    memswap_limit: 96m
+    depends_on:
+      xray:
+        condition: service_started
+    ports:
+      - "127.0.0.1:${PROBE_PORT}:1080/tcp"
+    volumes:
+      - ./runtime/probe.json:/etc/xray/config.json:ro
+    networks:
+      tunnel:
+        ipv4_address: ${PROBE_IPV4}
+
+networks:
+  tunnel:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${NETWORK_SUBNET}

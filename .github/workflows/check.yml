@@ -1,0 +1,18 @@
+name: checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - run: make check
+      - name: Validate with the pinned Xray image
+        run: |
+          python3 manage.py init --server 203.0.113.10 --sni www.example.com
+          python3 manage.py check
+      - name: Confirm generated files remain ignored
+        run: test -z "$(git status --porcelain)"

@@ -1,0 +1,7 @@
+.git
+.env
+secrets
+runtime
+data
+backups
+__pycache__

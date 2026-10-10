@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+secrets/
+runtime/
+data/
+backups/
+*.log
+*.pem
+*.key
+*.jsonl
+__pycache__/
+.DS_Store
+.venv/

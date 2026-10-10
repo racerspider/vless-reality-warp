@@ -4,6 +4,23 @@ A Docker Compose template for a private TCP proxy: Xray accepts VLESS with
 REALITY and sends client traffic through an authenticated Cloudflare WARP
 backend. Every installation generates its own credentials.
 
+## Set up with Codex or Claude
+
+Replace `<SSH_USER@VPS_IP>` and paste this prompt into your agent:
+
+```text
+Set up a VLESS + REALITY + WARP proxy on my VPS via SSH at <SSH_USER@VPS_IP>
+using https://github.com/racerspider/vless-reality-warp.
+
+Read the README and operations guide, inspect the host, and install missing
+prerequisites. Preserve existing services and SSH access. Choose unused ports
+and a subnet, verify a suitable REALITY camouflage hostname, generate fresh
+credentials, and deploy the TCP-only proxy. Verify the full chain locally and
+from an external client, confirming warp=on or warp=plus; report any check you
+cannot complete. Save the client URI and Mihomo config to private files and
+tell me how to retrieve them. Keep credentials and VPS details out of Git and logs.
+```
+
 ```mermaid
 flowchart LR
     client[Your client] -->|VLESS + REALITY / TCP| xray[Xray]

@@ -12,14 +12,16 @@ Replace `<SSH_USER@VPS_IP>` and paste this prompt into your agent:
 Set up a VLESS + REALITY + WARP proxy on my VPS via SSH at <SSH_USER@VPS_IP>
 using https://github.com/racerspider/vless-reality-warp.
 
-Read the README and operations guide, inspect the host, and install missing
-prerequisites. Preserve existing services and SSH access. Choose unused ports
+Read AGENTS.md, the README, and the operations guide. Inspect the host and
+install missing prerequisites. Preserve existing services and SSH access. Choose unused ports
 and a subnet, verify a suitable REALITY camouflage hostname, generate fresh
 credentials, and deploy the TCP-only proxy. Verify the full chain locally and
 from an external client, confirming warp=on or warp=plus; report any check you
 cannot complete. Save the client URI and Mihomo config to private files and
 tell me how to retrieve them. Keep credentials and VPS details out of Git and logs.
 ```
+
+Agent guidance lives in [AGENTS.md](AGENTS.md); `CLAUDE.md` imports the same rules.
 
 ```mermaid
 flowchart LR
